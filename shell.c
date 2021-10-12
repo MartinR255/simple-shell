@@ -77,6 +77,7 @@ int main (int argc, char *argv[]) {
 		else if ( process == 0 ) {
 			execvp(divided_command[0], divided_command);
 			printf("Invalid command\n");
+			exit(1);
 		} 
 		wait(NULL);
 		//free(copy_of_input_command); //free copy that have been manipulated above
