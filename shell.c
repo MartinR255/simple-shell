@@ -15,22 +15,14 @@ int main (int argc, char *argv[]) {
 	}
 
 	//variables for executable command
-	int input_length = 50;
-	char input_command[input_length];	
+	char input_command[50];	
 	char *divided_command[10];
 
 	//extra variables needed in 
-	int process, character; //character variable is used in flushing stdin
-	int position = 0;
-	char *argument;
-	char *copy_of_input_command, *copy_of_last_command;
+	int process = 0, position = 1, character = 0; //character variable is used in flushing stdin
+	char *argument = NULL, *copy_of_last_command = NULL;
 	
 	while (1) {
-		//alocete memory to make copy of previous command in case ! is called as command
-		//char *copy_of_last_command = (char *) malloc(strlen(input_command) + 1); 
-		//strcpy(copy_of_last_command, input_command);
-		copy_of_last_command = strdup(input_command);
-		
 		printf("premia> ");
 		scanf("%[^\n]", input_command); //fgets(input_command, 50, stdin);
 		
@@ -39,33 +31,16 @@ int main (int argc, char *argv[]) {
 		while ((character = getchar()) != '\n' && character != EOF) { }
 
 		if (strcmp(input_command, "exit") == 0) {
-			//free(copy_of_last_command);
 			exit(1);
 		} 
 		else if (strcmp(input_command, "!") == 0) {
 			strcpy(input_command, copy_of_last_command);
 		} 
-		//free(copy_of_last_command);
 
 		if (shell_env_variable_set) { //if env variable SHELL_LOG is set, write commands into SHELL_LOG file
 			fd = fopen(file_name, "a+");
 			fprintf(fd, "%s\n", input_command);
 			fclose(fd);
-		} 
-		//execute command if env variable SHELL_LOG is not set
-		//making copy of input comamnd to be manipulated iso the original can be used if ! is called as next command 
-		//char *copy_of_input_command = (char *) malloc(strlen(input_command) + 1); 
-		//strcpy(copy_of_input_command, input_command);
-		copy_of_input_command = strdup(input_command);
-
-		//divides the input into separate arguments
-		position = 1;
-		argument = strtok(copy_of_input_command, " ");
-		divided_command[0] = argument;	
-		while ( argument != NULL ) {
-			argument = strtok(NULL, " ");
-			divided_command[position] = argument; 
-			position++;
 		}
 
 		//creating new process
@@ -75,12 +50,21 @@ int main (int argc, char *argv[]) {
 			exit(1);
 		} 
 		else if ( process == 0 ) {
+  	                argument = strtok(input_command, " ");
+                	divided_command[0] = argument;
+			while ( argument != NULL ) {
+                        	argument = strtok(NULL, " "); 
+				divided_command[position] = argument;
+                        	position++;
+			}
+
+
 			execvp(divided_command[0], divided_command);
 			printf("Invalid command\n");
 			exit(1);
 		} 
 		wait(NULL);
-		//free(copy_of_input_command); //free copy that have been manipulated above
+		copy_of_last_command = strdup(input_command);
 	}
 	return 0;
 }
